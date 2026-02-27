@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>6-Dot Shape Generator</title>
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      font-family: sans-serif;
+      margin-top: 40px;
+    }
+    canvas {
+      border: 2px solid #333; /* The 200x400 boundary */
+      background-color: #f4f4f4;
+      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    }
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 16px;
+      cursor: pointer;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 5px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+  </style>
+</head>
+<body>
+
+  <canvas id="shapeCanvas" width="200" height="400"></canvas>
+  <button onclick="generateAndDraw()">Generate Unique Shape</button>
+
+  <script>
+    const canvas = document.getElementById('shapeCanvas');
+    const ctx = canvas.getContext('2d');
+
+    const WIDTH = 200;
+    const HEIGHT = 400;
+    const MIN_DIST = 10;
+    const NUM_DOTS = 6;
+
+    // Function to generate valid dot locations
+    function generateDots() {
+      let dots = [];
+      
+      while (dots.length < NUM_DOTS) {
+        // Pick random whole-pixel coordinates within the canvas
+        let newX = Math.floor(Math.random() * WIDTH);
+        let newY = Math.floor(Math.random() * HEIGHT);
+        let newDot = { x: newX, y: newY };
+
+        let isValid = true;
+
+        // Check the new dot against all previously placed dots
+        for (let dot of dots) {
+          let dx = dot.x - newDot.x;
+          let dy = dot.y - newDot.y;
+          // Use Pythagorean theorem to find the exact pixel distance
+          let distance = Math.sqrt(dx * dx + dy * dy);
+
+          // If it falls inside the 10px exclusion zone, reject it
+          if (distance < MIN_DIST) {
+            isValid = false;
+            break; 
+          }
+        }
+
+        // If it passed the distance check, add it to our sequence
+        if (isValid) {
+          dots.push(newDot);
+        }
+      }
+      return dots;
+    }
+
+    // Function to draw the sequence on the canvas
+    function generateAndDraw() {
+      // Clear the previous shape
+      ctx.clearRect(0, 0, WIDTH, HEIGHT);
+      
+      let dots = generateDots();
+
+      // 1. Draw the connecting lines (The Sequence)
+      ctx.beginPath();
+      ctx.moveTo(dots[0].x, dots[0].y); // Start at the 1st dot
+      
+      for (let i = 1; i < dots.length; i++) {
+        ctx.lineTo(dots[i].x, dots[i].y); // Connect to subsequent dots
+      }
+      
+      ctx.strokeStyle = '#222';
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      // 2. Draw the 6 dots visually
+      ctx.fillStyle = '#ff3333';
+      for (let dot of dots) {
+        ctx.beginPath();
+        // Draw a 3px radius circle for the dot itself
+        ctx.arc(dot.x, dot.y, 3, 0, Math.PI * 2); 
+        ctx.fill();
+      }
+      
+      // Highlight the Start and End dots differently (Optional but helpful)
+      ctx.fillStyle = '#00cc00'; // Green for Start
+      ctx.beginPath();
+      ctx.arc(dots[0].x, dots[0].y, 4, 0, Math.PI * 2);
+      ctx.fill();
+
+      ctx.fillStyle = '#0000ff'; // Blue for End
+      ctx.beginPath();
+      ctx.arc(dots[5].x, dots[5].y, 4, 0, Math.PI * 2);
+      ctx.fill();
+    }
+
+    // Generate the first shape when the page loads
+    generateAndDraw();
+  </script>
+
+</body>
+</html>
